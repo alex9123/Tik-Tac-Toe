@@ -1,7 +1,13 @@
+// Tic Tac Toe
 let cnv = document.getElementById("canvas");
 let ctx = cnv.getContext("2d");
 cnv.width = 800;
 cnv.height = 800;
+
+let resetBtn = document.getElementById("reset-btn")
+let playerOneScore = document.getElementById("player-one-score")
+let playerTwoScore = document.getElementById("player-two-score")
+let onGoing = false
 
 player1 = {
     player: 1,
@@ -19,6 +25,7 @@ let occupiedSpace = []
 
 function drawBoard() {
     // Draw vertical lines
+    ctx.lineWidth = 1
     for (i = cnv.width/3; i < cnv.width; i += cnv.width/3) {
         ctx.beginPath();
         ctx.moveTo(i, 0);
@@ -35,13 +42,16 @@ function drawBoard() {
 }
 
 
-
+// resets game
 function clear() {
     ctx.clearRect(0, 0, cnv.width, cnv.height);
+    occupiedSpace = []
     currentPlayer = player1
+    onGoing = true
     drawBoard()
 }
 
+// check which column the mouse is in
 function checkColumn(mouseX) {
     if (mouseX > 0 && mouseX < cnv.width/3) {
         return 1
@@ -52,6 +62,7 @@ function checkColumn(mouseX) {
     }
 }
 
+// check which row the mouse is in
 function checkRow(mouseY) {
     if (mouseY > 0 && mouseY < cnv.height/3) {
         return 1
@@ -62,6 +73,7 @@ function checkRow(mouseY) {
     }
 }
 
+// Check if space is occupied
 function checkSpace(row, column) {
     if (occupiedSpace.length > 0) {
         for (i = 0; i < occupiedSpace.length; i++) {
@@ -73,6 +85,7 @@ function checkSpace(row, column) {
     return true
 }
 
+// Count number of spaces a symbol has taken up
 function countSpace(direction, space) {
     if (direction.symbol == "") {
         direction.symbol = space
@@ -124,7 +137,8 @@ function checkForWin() {
             }
         }
     }
-    console.log(d2)
+
+ 
     if (c1.num == 3) {
         return ["c", 1]
     } else if (c2.num == 3) {
@@ -141,9 +155,9 @@ function checkForWin() {
         return ["d", 1]
     } else if (d2.num == 3) {
         return ["d", 2]
+    } else {
+        return false
     }
-    
-    return false
 }
 
 function clickDetection(event) {
@@ -157,7 +171,7 @@ function clickDetection(event) {
     let row = checkRow(mouseY)
     let column = checkColumn(mouseX)
 
-    if (row && column && checkSpace(row, column)) {
+    if (row && column && checkSpace(row, column) && onGoing) {
         occupiedSpace.push([row, column, currentPlayer.symbol])
         ctx.font = "bold 150px Arial";
         ctx.fillStyle = "black";
@@ -168,19 +182,28 @@ function clickDetection(event) {
 
         if (checkForWin()) {
             let lineInfo = checkForWin()
+            ctx.lineWidth = 10;
+            ctx.beginPath()
             if (lineInfo[0] == "c") {
-                ctx.lineWidth = 10;
-                ctx.beginPath()
                 ctx.moveTo(lineInfo[1] * cnv.width/3 - cnv.width/6,0)
                 ctx.lineTo(lineInfo[1] * cnv.width/3 - cnv.width/6, cnv.height)
-                ctx.stroke()
-            } else if (lineInfo[0] = "r") {
-                ctx.lineWidth = 10;
-                ctx.beginPath()
-                ctx.moveTo(0,lineInfo[1] * cnv.width/3 - cnv.width/6)
-                ctx.lineTo(cnv.height, lineInfo[1] * cnv.width/3 - cnv.width/6)
-                ctx.stroke()
+            } else if (lineInfo[0] == "r") {
+                ctx.moveTo(0,lineInfo[1] * cnv.height/3 - cnv.height/6)
+                ctx.lineTo(cnv.width, lineInfo[1] * cnv.height/3 - cnv.height/6)
+            } else if (lineInfo[0] == "d") {
+                if (lineInfo[1] == 1) {
+                    ctx.moveTo(0,0)
+                    ctx.lineTo(cnv.width, cnv.height)
+                } else {
+                    ctx.moveTo(cnv.width,0)
+                    ctx.lineTo(0, cnv.height)
+                }
             }
+            ctx.stroke()
+            currentPlayer.score ++
+            playerOneScore.innerHTML = player1.score
+            playerTwoScore.innerHTML = player2.score
+            onGoing = false
         } else if (currentPlayer.player == 1) {
            currentPlayer = player2
        } else {
@@ -191,5 +214,6 @@ function clickDetection(event) {
 
 
 document.addEventListener("click", clickDetection)
+resetBtn.addEventListener("click", clear)
 
 clear()
